@@ -232,13 +232,17 @@ td .readonly-value{display:inline-block;min-width:50px;font-weight:500}
 
   <!-- Tabs -->
   <div class="tabs">
-    <button class="tab-btn active" onclick="switchTab('region')">🏢 战区汇总</button>
+    <button class="tab-btn active" onclick="switchTab('group')">🏛️ 集团汇总</button>
+    <button class="tab-btn" onclick="switchTab('region')">🏢 战区汇总</button>
     <button class="tab-btn" onclick="switchTab('store')">📍 门店汇总</button>
     <button class="tab-btn" onclick="switchTab('detail')">📋 专柜明细</button>
   </div>
 
+  <!-- Group Summary -->
+  <div class="tab-content active" id="tab-group"><div class="table-wrapper"><table id="groupTable"></table></div></div>
+
   <!-- Region Summary -->
-  <div class="tab-content active" id="tab-region"><div class="table-wrapper"><table id="regionTable"></table></div></div>
+  <div class="tab-content" id="tab-region"><div class="table-wrapper"><table id="regionTable"></table></div></div>
 
   <!-- Store Summary -->
   <div class="tab-content" id="tab-store"><div class="table-wrapper"><table id="storeTable"></table></div></div>
@@ -690,6 +694,7 @@ function renderAll() {
   currentRegionAgg = aggregateRegion(currentStoreAgg);
   populateFilters();
   renderSummaryCards();
+  renderGroupTable();
   renderRegionTable();
   renderStoreTable();
   renderDetailTable();
@@ -740,6 +745,32 @@ function renderSummaryCards() {
   document.getElementById('summaryCards').innerHTML = cards.map(c =>
     `<div class="summary-card ${c.cls||''}"><div class="card-label">${c.label}</div><div class="card-value">${c.value}</div><div class="card-sub">${c.sub}</div></div>`
   ).join('');
+}
+
+function renderGroupTable() {
+  const filtered = getFilteredData();
+  const storeAgg = aggregateStore(filtered);
+  const regionAgg = aggregateRegion(storeAgg);
+  const totalCounters = storeAgg.reduce((a,s)=>a+s.counterCount,0);
+  const totalQ = storeAgg.reduce((a,s)=>a+s.sumQ,0);
+  const totalR = storeAgg.reduce((a,s)=>a+s.sumR,0);
+  const totalN = storeAgg.reduce((a,s)=>a+s.sumN,0);
+  const totalAmount = storeAgg.reduce((a,s)=>a+s.sumAmount,0);
+  const totalTarget = storeAgg.reduce((a,s)=>a+s.sumTarget,0);
+  const totalSat = totalQ>0 ? totalR/totalQ : null;
+  const totalCost = totalR>0 ? totalN/totalR : null;
+
+  document.getElementById('groupTable').innerHTML = `<thead><tr>
+    <th class="col-group-a">战区数</th><th class="col-group-a">门店数</th><th class="col-group-a">专柜数</th>
+    <th class="col-group-b">立项金额合计</th><th class="col-group-c">全周期目标核销合计</th>
+    <th class="col-group-c">饱和承接人数</th><th class="col-group-c">实际核销人数</th>
+    <th class="col-group-c">饱和率</th><th class="col-group-b">已付出买断成本</th><th class="col-group-b">人均成本</th>
+  </tr></thead><tbody><tr>
+    <td><strong>${regionAgg.length}</strong></td><td><strong>${storeAgg.length}</strong></td><td><strong>${totalCounters}</strong></td>
+    <td class="text-right num">${fmtMoney(totalAmount)}</td><td class="text-right num">${fmtNum(totalTarget,0)}</td>
+    <td class="text-right num"><strong>${fmtNum(totalQ,0)}</strong></td><td class="text-right num"><strong>${fmtNum(totalR,0)}</strong></td>
+    <td><strong>${fmtPctHtml(totalSat)}</strong></td><td class="text-right num">${fmtMoney(totalN)}</td><td>${fmtCostHtml(totalCost)}</td>
+  </tr></tbody>`;
 }
 
 function renderRegionTable() {
@@ -880,7 +911,8 @@ function resetFilters() {
 function switchTab(tab) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-  document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
+  const targetBtn = document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`);
+  if (targetBtn) targetBtn.classList.add('active');
   document.getElementById('tab-' + tab).classList.add('active');
 }
 
