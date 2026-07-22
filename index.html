@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>低边际成本直采专柜活动一览表</title>
+<style>
+/* ========== Reset & Base ========== */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f1f4f8;--surface:#fff;--text:#1e293b;--text-muted:#64748b;
+  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-light:#eff6ff;
+  --accent-green:#059669;--accent-orange:#ea580c;--accent-purple:#7c3aed;--accent-red:#dc2626;
+  --border:#e2e8f0;--shadow-sm:0 1px 3px rgba(0,0,0,.04),0 1px 2px rgba(0,0,0,.06);
+  --shadow-md:0 4px 12px rgba(0,0,0,.06),0 1px 3px rgba(0,0,0,.04);
+  --shadow-lg:0 12px 32px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
+  --radius-sm:8px;--radius:12px;--radius-lg:16px;
+  --transition:200ms cubic-bezier(.4,0,.2,1);
+}
+body{
+  font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","Helvetica Neue",sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;min-height:100vh;
+  -webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+}
+
+/* ========== Header ========== */
+.header{
+  background:linear-gradient(160deg,#0f172a 0%,#1e3a5f 30%,#1a4b7a 60%,#1b5e8a 100%);
+  color:#fff;padding:18px 32px;
+  box-shadow:0 4px 24px rgba(15,23,42,.3);
+  position:sticky;top:0;z-index:100;
+}
+.header::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,rgba(255,255,255,.06),rgba(255,255,255,.25) 50%,rgba(255,255,255,.06));
+}
+.header-inner{max-width:100%;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;position:relative}
+.header h1{font-size:1.25rem;font-weight:700;letter-spacing:-.01em;white-space:nowrap;display:flex;align-items:center;gap:8px}
+.header h1::before{content:'📊';font-size:1.4rem}
+.header-controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.header-controls label{font-size:.82rem;opacity:.85;white-space:nowrap;font-weight:500}
+.header-controls select{
+  padding:7px 30px 7px 12px;border:1px solid rgba(255,255,255,.2);border-radius:8px;
+  background:rgba(255,255,255,.1);color:#fff;font-size:.82rem;min-width:140px;
+  outline:none;cursor:pointer;appearance:none;font-weight:500;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23fff' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  transition:all var(--transition);
+}
+.header-controls select:hover{background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.4)}
+.header-controls select:focus{background:rgba(255,255,255,.22);border-color:rgba(255,255,255,.6);box-shadow:0 0 0 3px rgba(255,255,255,.1)}
+.header-controls select option{color:var(--text);background:#fff;font-weight:500}
+.mode-toggle{
+  display:flex;align-items:center;gap:8px;font-size:.82rem;font-weight:500;
+  cursor:pointer;user-select:none;padding:7px 16px;border-radius:24px;
+  border:1.5px solid rgba(255,255,255,.35);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);
+  transition:all var(--transition);
+}
+.mode-toggle:hover{background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.55);transform:translateY(-1px)}
+.mode-toggle.edit-active{background:var(--accent-orange);border-color:var(--accent-orange);box-shadow:0 2px 12px rgba(234,88,12,.35)}
+.mode-toggle .dot{width:9px;height:9px;border-radius:50%;background:#22c55e;box-shadow:0 0 6px rgba(34,197,94,.5);transition:all var(--transition)}
+.mode-toggle.edit-active .dot{background:#fff;box-shadow:0 0 6px rgba(255,255,255,.6)}
+
+/* ========== Main ========== */
+.main{max-width:1440px;margin:0 auto;padding:20px 24px}
+
+/* ========== Filter Bar ========== */
+.filter-bar{
+  background:var(--surface);border-radius:var(--radius);padding:14px 20px;margin-bottom:16px;
+  display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  box-shadow:var(--shadow-sm);border:1px solid var(--border);
+}
+.filter-bar label{font-size:.84rem;font-weight:600;color:var(--text-muted);white-space:nowrap}
+.filter-bar select{
+  padding:8px 34px 8px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);
+  font-size:.84rem;background:var(--bg);color:var(--text);cursor:pointer;
+  appearance:none;min-width:140px;outline:none;font-weight:500;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2364748b' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 10px center;
+  transition:all var(--transition);
+}
+.filter-bar select:hover{border-color:#94a3b8;background:#fff}
+.filter-bar select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.1);background:#fff}
+.btn{
+  padding:8px 18px;border:none;border-radius:var(--radius-sm);font-size:.84rem;
+  font-weight:600;cursor:pointer;transition:all var(--transition);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.btn-primary{background:var(--primary);color:#fff;box-shadow:0 2px 8px rgba(37,99,235,.3)}
+.btn-primary:hover{background:var(--primary-dark);box-shadow:0 4px 14px rgba(37,99,235,.4);transform:translateY(-1px)}
+.btn-outline{
+  background:var(--surface);color:var(--primary);
+  border:1.5px solid var(--border)!important;box-shadow:var(--shadow-sm);
+}
+.btn-outline:hover{background:var(--primary-light);border-color:var(--primary)!important;color:var(--primary-dark)}
+
+/* ========== Summary Cards ========== */
+.summary-cards{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:12px;margin-bottom:20px;
+}
+.summary-card{
+  background:var(--surface);border-radius:var(--radius);padding:16px 18px;
+  box-shadow:var(--shadow-sm);border:1px solid var(--border);
+  position:relative;overflow:hidden;
+  transition:all var(--transition);
+}
+.summary-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.summary-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;border-radius:4px 0 0 4px;
+}
+.summary-card:nth-child(1)::before{background:var(--primary)}
+.summary-card:nth-child(2)::before{background:var(--accent-green)}
+.summary-card:nth-child(3)::before{background:var(--accent-purple)}
+.summary-card:nth-child(4)::before{background:var(--accent-orange)}
+.summary-card:nth-child(5)::before{background:var(--primary)}
+.summary-card:nth-child(6)::before{background:var(--accent-red)}
+.summary-card .card-label{font-size:.75rem;color:var(--text-muted);margin-bottom:6px;font-weight:500;letter-spacing:.01em;text-transform:uppercase}
+.summary-card .card-value{font-size:1.5rem;font-weight:700;color:var(--text);line-height:1.2}
+.summary-card .card-sub{font-size:.7rem;color:#94a3b8;margin-top:4px;font-weight:400}
+
+/* ========== Tabs ========== */
+.tabs{display:flex;gap:0;margin-bottom:0;flex-wrap:wrap}
+.tab-btn{
+  padding:10px 22px;border:none;background:transparent;font-size:.84rem;
+  cursor:pointer;color:var(--text-muted);font-weight:500;
+  transition:all var(--transition);border-bottom:3px solid transparent;
+  position:relative;top:3px;
+}
+.tab-btn:hover{color:var(--primary);background:rgba(37,99,235,.04)}
+.tab-btn.active{
+  color:var(--primary);font-weight:700;border-bottom-color:var(--primary);
+  background:transparent;
+}
+.tab-content{display:none}
+.tab-content.active{display:block}
+.tab-content>.table-wrapper{border-radius:0 var(--radius) var(--radius) var(--radius)}
+
+/* ========== Tables ========== */
+.table-wrapper{
+  overflow-x:auto;overflow-y:auto;max-height:72vh;
+  background:var(--surface);border-radius:var(--radius);
+  box-shadow:var(--shadow-sm);border:1px solid var(--border);margin-bottom:20px;
+}
+.table-wrapper::-webkit-scrollbar{height:6px;width:6px}
+.table-wrapper::-webkit-scrollbar-track{background:transparent}
+.table-wrapper::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}
+.table-wrapper::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.8rem;min-width:1200px}
+thead th{
+  background:#f8fafc;color:#334155;font-weight:600;padding:10px 8px;
+  text-align:center;border-bottom:2px solid #e2e8f0;white-space:nowrap;
+  position:sticky;top:0;z-index:10;font-size:.76rem;letter-spacing:.01em;
+}
+thead th.col-group-a{background:#f0f4ff}
+thead th.col-group-b{background:#fffbf0}
+thead th.col-group-c{background:#f0faf4}
+thead th.col-group-d{background:#faf5ff}
+thead th.col-group-e{background:#fff5f5}
+tbody td{padding:8px 7px;text-align:center;border-bottom:1px solid #f1f5f9;white-space:nowrap;font-size:.79rem}
+tbody tr{transition:background var(--transition)}
+tbody tr:nth-child(even){background:#fafbfc}
+tbody tr:hover{background:#f0f4ff}
+.text-left{text-align:left!important}
+.text-right{text-align:right!important}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum";font-family:"SF Mono","Cascadia Code","JetBrains Mono","Consolas",monospace;font-size:.78rem}
+.rate-high{color:var(--accent-green);font-weight:700}
+.rate-mid{color:var(--accent-orange);font-weight:700}
+.rate-low{color:var(--accent-red);font-weight:700}
+.cost-good{color:var(--accent-green);font-weight:500}
+.cost-warn{color:var(--accent-red);font-weight:500}
+
+/* Editable cells */
+td input.cell-input{
+  padding:5px 6px;border:1.5px solid #e2e8f0;border-radius:6px;text-align:center;
+  font-size:.79rem;font-family:inherit;background:#fffbeb;outline:none;
+  transition:all var(--transition);width:80px;
+}
+td input.cell-input:hover{border-color:#94a3b8}
+td input.cell-input:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(37,99,235,.12);background:#fff}
+td .readonly-value{display:inline-block;min-width:50px;font-weight:500}
+.nodata{color:#cbd5e1;font-style:italic}
+.sat-total{color:var(--accent-purple);font-weight:700}
+.cutoff-note{font-size:.68rem;color:#94a3b8;font-weight:400}
+
+/* ========== Responsive ========== */
+@media(max-width:768px){
+  .header{padding:12px 16px}.header h1{font-size:1rem}.main{padding:12px}
+  .summary-cards{grid-template-columns:repeat(2,1fr)}table{font-size:.73rem}
+}
+@media print{
+  .header{position:static;background:#fff;color:#000;box-shadow:none}
+  .header-controls,.filter-bar,.btn,.tabs,.mode-toggle{display:none!important}
+  .main{padding:0}.table-wrapper{box-shadow:none;border:1px solid #ccc}body{background:#fff}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div class="header-inner">
+    <h1>📊 低边际成本直采专柜活动一览表</h1>
+    <div class="header-controls">
+      <label for="periodSelect">📅 数据截止期：</label>
+      <select id="periodSelect" onchange="onPeriodChange()"></select>
+      <div class="mode-toggle" id="modeToggle" onclick="toggleEditMode()" title="切换查看/编辑模式">
+        <span class="dot"></span>
+        <span id="modeLabel">查看模式</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MAIN ===== -->
+<div class="main">
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <label>🏢 战区：</label>
+    <select id="filterRegion" onchange="onFilterRegionChange()"><option value="">全部战区</option></select>
+    <label>📍 门店：</label>
+    <select id="filterStore" onchange="renderAll()"><option value="">全部门店</option></select>
+    <button class="btn btn-outline" onclick="resetFilters()">🔄 重置</button>
+    <span style="flex:1"></span>
+    <button class="btn btn-primary" onclick="exportCSV()">📥 导出CSV</button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-cards" id="summaryCards"></div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('region')">🏢 战区汇总</button>
+    <button class="tab-btn" onclick="switchTab('store')">📍 门店汇总</button>
+    <button class="tab-btn" onclick="switchTab('detail')">📋 专柜明细</button>
+  </div>
+
+  <!-- Region Summary -->
+  <div class="tab-content active" id="tab-region"><div class="table-wrapper"><table id="regionTable"></table></div></div>
+
+  <!-- Store Summary -->
+  <div class="tab-content" id="tab-store"><div class="table-wrapper"><table id="storeTable"></table></div></div>
+
+  <!-- Detail Table -->
+  <div class="tab-content" id="tab-detail"><div class="table-wrapper"><table id="detailTable"></table></div></div>
+
+</div>
+
+<script>
+// ==================== DATA & CONFIG ====================
+const DAY_MAP = {'周一':1,'周二':2,'周三':3,'周四':4,'周五':5,'周六':6,'周日':7,'星期日':7};
+
+// Current mode: false=view-only, true=editable
+let editMode = false;
+
+// Current command date (YYYYMMDD string)
+let currentCmdDate = '20260715';
+
+function parseOffPeakDays(str) {
+  if (!str || !str.trim()) return [1,2,3,4,5,6,7];
+  if (str.includes('节假日') || str.includes('节日')) return [1,2,3,4,5,6,7];
+  const days = new Set();
+  const normalized = str.replace(/～/g, '至');
+  const parts = normalized.split(/[、,，]/);
+  for (let part of parts) {
+    part = part.trim();
+    if (!part) continue;
+    if (part.includes('至')) {
+      const [s, e] = part.split('至');
+      const sd = DAY_MAP[s.trim()];
+      const ed = DAY_MAP[e.trim()];
+      if (sd && ed) for (let d = sd; d <= ed; d++) days.add(d);
+    } else if (part === '全周' || part === '每天' || part === '每日') {
+      for (let d = 1; d <= 7; d++) days.add(d);
+    } else {
+      const d = DAY_MAP[part];
+      if (d) days.add(d);
+    }
+  }
+  const result = Array.from(days).sort((a,b)=>a-b);
+  return result.length > 0 ? result : [1,2,3,4,5,6,7];
+}
+
+function parseDate(str) {
+  const s = String(str).trim();
+  if (s.length !== 8) return null;
+  return new Date(parseInt(s.substring(0,4)), parseInt(s.substring(4,6))-1, parseInt(s.substring(6,8)));
+}
+
+function formatDate8(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}${m}${d}`;
+}
+
+function formatDateDisplay(date) {
+  return `${date.getMonth()+1}.${date.getDate()}`;
+}
+
+function getDayOfWeekCN(date) { const d = date.getDay(); return d === 0 ? 7 : d; }
+
+function countOffPeakDays(startStr, endStr, offPeakDays) {
+  const start = parseDate(startStr);
+  const end = parseDate(endStr);
+  if (!start || !end || start > end) return 0;
+  let count = 0;
+  const cur = new Date(start);
+  while (cur <= end) {
+    if (offPeakDays.includes(getDayOfWeekCN(cur))) count++;
+    cur.setDate(cur.getDate() + 1);
+  }
+  return count;
+}
+
+// ==================== SATURATION PARSER ====================
+function parseSaturation(raw) {
+  const str = String(raw).trim();
+  const totalMatch = str.match(/^总量(\d+)/);
+  if (totalMatch) return { mode: 'total', value: parseInt(totalMatch[1]) };
+  const num = parseInt(str);
+  if (!isNaN(num)) return { mode: 'daily', value: num };
+  return { mode: 'daily', value: 0 };
+}
+
+// ==================== RAW DATA (88 rows) ====================
+// 内部列映射: 0=战区 1=门店 2=专柜号 3=专柜名称 4=采购内容 5=立项金额(F)
+//             6=开始日期(G) 7=截止日期(H) 8=闲时定义(I) 9=单天饱和(J)
+//             10=全周期目标核销(O) 11=实际核销(R)
+const rawData = [
+  { region:"第一战区A", store:"杭州文化银泰百货", counterId:"HZ13-91146", counterName:"嗨乐趣", content:"10个娃娃机游戏币", amount:0, startDate:"20260301", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"300", targetWriteOff:200, actualWriteOff:2768 },
+  { region:"第一战区A", store:"杭州文化银泰百货", counterId:"HZ13-A16HZ", counterName:"弹了个猪", content:"50颗弹珠", amount:0, startDate:"20260401", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"80", targetWriteOff:250, actualWriteOff:458 },
+  { region:"第八战区", store:"杭州滨江银泰百货", counterId:"HZ20-A0N79", counterName:"MeiKTV", content:"【魅KTV】100元无门槛券、【魅KTV】周内白天档小包欢唱", amount:0, startDate:"20260501", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"270", targetWriteOff:300, actualWriteOff:280 },
+  { region:"第八战区", store:"杭州滨江银泰百货", counterId:"HZ20-A12GE", counterName:"超玩猩球", content:"【超玩猩球】50枚游戏币券", amount:0, startDate:"20260501", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"总量6000", targetWriteOff:3000, actualWriteOff:419 },
+  { region:"第六战区", store:"厦门集美银泰百货", counterId:"FJ02-A14ZG", counterName:"弹猪乐", content:"50颗弹珠", amount:0, startDate:"20260505", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"50", targetWriteOff:"每日20", actualWriteOff:163 },
+  { region:"第六战区", store:"义乌银泰百货", counterId:"JH03-A16W5", counterName:"优机小羊", content:"健身房一日体验卡", amount:0, startDate:"20260601", endDate:"20261231", offPeakDef:"周一～周日", dailySaturation:"50", targetWriteOff:300, actualWriteOff:2 },
+  { region:"第六战区", store:"厦门国贸银泰百货", counterId:"FJ01-A16U8", counterName:"豆奇熊弹珠堂", content:"豆奇熊弹珠堂19颗弹珠兑换券", amount:0, startDate:"20260601", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"30", targetWriteOff:100, actualWriteOff:58 },
+  { region:"第一战区A", store:"杭州庆春银泰百货", counterId:"HZ08-A18YS", counterName:"素秀茉莉", content:"60分钟韩式分区护理1次", amount:0, startDate:"20260601", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"6", targetWriteOff:300, actualWriteOff:342 },
+  { region:"第二战区", store:"宁波环球银泰百货", counterId:"NB08-59655", counterName:"时尚纯K", content:"2小时免费欢唱券", amount:0, startDate:"20260601", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"总量5600", targetWriteOff:5600, actualWriteOff:2102 },
+  { region:"第一战区A", store:"杭州庆春银泰百货", counterId:"HZ08-A0SA4", counterName:"巴卜蚁", content:"抓扭蛋闲时20个游戏币兑换券", amount:1494, startDate:"20260605", endDate:"20260709", offPeakDef:"周一～周日", dailySaturation:"90", targetWriteOff:1800, actualWriteOff:302 },
+  { region:"第八战区", store:"湖州东吴银泰百货", counterId:"HU02-A19PZ", counterName:"快乐随我·星世纪", content:"1小时畅玩淘气堡", amount:7682.4, startDate:"20260608", endDate:"20260707", offPeakDef:"周一～周五", dailySaturation:"1200", targetWriteOff:7920, actualWriteOff:68 },
+  { region:"第六战区", store:"临海银泰百货", counterId:"TZ06-A0S7V", counterName:"坚蛋", content:"坚蛋健身次卡", amount:0, startDate:"20260610", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"146", targetWriteOff:50, actualWriteOff:0 },
+  { region:"第六战区", store:"临海银泰百货", counterId:"TZ06-A1877", counterName:"飞跃天下", content:"枪战英雄体验券", amount:0, startDate:"20260610", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"14", targetWriteOff:50, actualWriteOff:77 },
+  { region:"第三战区", store:"合肥高新银泰百货", counterId:"AH06-A14CD", counterName:"星奇多（青年公社）", content:"游戏币15枚", amount:0, startDate:"20260613", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"100", targetWriteOff:500, actualWriteOff:1251 },
+  { region:"第三战区", store:"合肥高新银泰百货", counterId:"AH06-A18S7", counterName:"趣玩伴", content:"趣玩伴捞鱼", amount:0, startDate:"20260615", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"138", targetWriteOff:1000, actualWriteOff:298 },
+  { region:"第八战区", store:"杭州下沙银泰百货", counterId:"HZ15-A14YV", counterName:"嗨森拾光机", content:"弹珠100枚", amount:3596.4, startDate:"20260615", endDate:"20260714", offPeakDef:"周一～周四", dailySaturation:"256", targetWriteOff:2430, actualWriteOff:341 },
+  { region:"第六战区", store:"临海银泰百货", counterId:"TZ06-A15N5", counterName:"弹了个猪", content:"50颗弹珠", amount:0, startDate:"20260616", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"360", targetWriteOff:2100, actualWriteOff:1079 },
+  { region:"第三战区", store:"合肥高新银泰百货", counterId:"AH06-A0HRB", counterName:"金仕堡", content:"健身周卡", amount:0, startDate:"20260617", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"540", targetWriteOff:700, actualWriteOff:30 },
+  { region:"第一战区B", store:"杭州中大银泰百货", counterId:"162-A139S", counterName:"乐网", content:"网球机1小时体验", amount:0, startDate:"20260618", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"36", targetWriteOff:75, actualWriteOff:85 },
+  { region:"第三战区", store:"合肥高新银泰百货", counterId:"AH06-A1638", counterName:"弹了个猪", content:"弹了个猪弹珠30颗", amount:0, startDate:"20260623", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"160", targetWriteOff:220, actualWriteOff:99 },
+  { region:"第八战区", store:"莲荷里", counterId:"HZ21-A100K", counterName:"勾对角电竟", content:"上网1小时", amount:0, startDate:"20260624", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"200", targetWriteOff:1680, actualWriteOff:178 },
+  { region:"第八战区", store:"莲荷里", counterId:"HZ21-A0WWX", counterName:"TTSKATE", content:"滑板体验课1节", amount:0, startDate:"20260624", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"90", targetWriteOff:1600, actualWriteOff:265 },
+  { region:"第八战区", store:"海宁银泰百货", counterId:"132-A17F8", counterName:"嗨乐趣", content:"1小时淘气堡体验券", amount:0, startDate:"20260715", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"80", targetWriteOff:384, actualWriteOff:37 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-A132E", counterName:"宝贝都", content:"沙池单人体验", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"84", targetWriteOff:100, actualWriteOff:2 },
+  { region:"第六战区", store:"厦门集美银泰百货", counterId:"FJ02-A17MM", counterName:"穿越时空", content:"【穿越时空】单次体验券", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"36", targetWriteOff:160, actualWriteOff:2 },
+  { region:"第八战区", store:"莲荷里", counterId:"HZ21-A1839", counterName:"浙打学会", content:"30分钟架子鼓体验课", amount:0, startDate:"20260701", endDate:"20261231", offPeakDef:"周一～周五", dailySaturation:"72", targetWriteOff:1180, actualWriteOff:3 },
+  { region:"第六战区", store:"厦门集美银泰百货", counterId:"FJ02-A0YLZ", counterName:"攀猩", content:"【攀猩】15分钟攀岩体验", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"16", targetWriteOff:160, actualWriteOff:5 },
+  { region:"第一战区A", store:"杭州西湖银泰百货", counterId:"HZ06-A0U7K", counterName:"乐刻运动", content:"乐刻运动健身兑换券", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"60", targetWriteOff:310, actualWriteOff:9 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-70966", counterName:"部落酷玩", content:"10枚游戏币", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"100", targetWriteOff:100, actualWriteOff:12 },
+  { region:"第六战区", store:"乐清银泰百货", counterId:"WZ06-A15HV", counterName:"GLZED", content:"奶油胶发夹", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"40", targetWriteOff:440, actualWriteOff:13 },
+  { region:"第六战区", store:"厦门集美银泰百货", counterId:"FJ02-80281", counterName:"宝乐迪量贩KTV", content:"KTV两小时嗨唱券", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"36", targetWriteOff:360, actualWriteOff:14 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-52c78", counterName:"猫野条一", content:"单人体验", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"50", targetWriteOff:320, actualWriteOff:16 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-A15ZZ", counterName:"幻想兔", content:"30颗弹珠", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"126", targetWriteOff:360, actualWriteOff:28 },
+  { region:"第九战区", store:"银泰百货武汉创意城", counterId:"E07-A16SU", counterName:"抓小鱼", content:"20枚弹珠", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"120", targetWriteOff:310, actualWriteOff:42 },
+  { region:"第六战区", store:"温岭银泰百货", counterId:"TZ05-A18ZV", counterName:"弹了个猪", content:"50枚弹珠", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"108", targetWriteOff:1800, actualWriteOff:46 },
+  { region:"第八战区", store:"莲荷里", counterId:"HZ21-A18RT", counterName:"友唱", content:"1h欢唱券", amount:0, startDate:"20260701", endDate:"20261231", offPeakDef:"周一～周五", dailySaturation:"72", targetWriteOff:900, actualWriteOff:54 },
+  { region:"第六战区", store:"金华江北银泰百货", counterId:"JH04-A195F", counterName:"恐龙列车", content:"恐龙车体验", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"126", targetWriteOff:50, actualWriteOff:56 },
+  { region:"第六战区", store:"金华江北银泰百货", counterId:"JH04-A1719", counterName:"梦幻搭档", content:"梦幻搭档凭小票兑换30颗弹珠", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"400", targetWriteOff:100, actualWriteOff:90 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-A0YWM", counterName:"嗨匹时光", content:"单人体验券", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"56", targetWriteOff:400, actualWriteOff:119 },
+  { region:"第六战区", store:"乐清银泰百货", counterId:"WZ06-A1834", counterName:"星茂派", content:"星茂派欢唱券", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"10", targetWriteOff:352, actualWriteOff:120 },
+  { region:"第六战区", store:"厦门集美银泰百货", counterId:"FJ02-A12FP", counterName:"部落酷玩", content:"【部落酷玩】10枚游戏币", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"120", targetWriteOff:480, actualWriteOff:126 },
+  { region:"第八战区", store:"海宁银泰百货", counterId:"132-A18I2", counterName:"弹猪乐", content:"弹猪乐30颗弹珠", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"60", targetWriteOff:552, actualWriteOff:519 },
+  { region:"第六战区", store:"柳州银泰百货", counterId:"GX01-A0NRF", counterName:"童诗乐园", content:"5枚游戏币", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"99", targetWriteOff:2460, actualWriteOff:240 },
+  { region:"第九战区", store:"孝感银泰百货", counterId:"E08-A18RD", counterName:"娃娃集合营", content:"娃娃集合营20枚游戏币", amount:345, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"192", targetWriteOff:1150, actualWriteOff:373 },
+  { region:"第一战区A", store:"杭州西湖银泰百货", counterId:"HZ06-A0U6A", counterName:"天空城", content:"天空城10个游戏币兑换券", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"40", targetWriteOff:510, actualWriteOff:385 },
+  { region:"第三战区", store:"合肥高新银泰百货", counterId:"AH06-A12HA", counterName:"食玩猫", content:"食玩猫免费10币券", amount:0, startDate:"20260701", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"820", targetWriteOff:870, actualWriteOff:642 },
+  { region:"第八战区", store:"嘉善银泰百货", counterId:"JX03-A03IG", counterName:"小旁遥", content:"捞鱼+过家家+小厨房畅玩2小时", amount:1500, startDate:"20260701", endDate:"20260802", offPeakDef:"周一～周五", dailySaturation:"105", targetWriteOff:1012, actualWriteOff:976 },
+  { region:"第三战区", store:"蚌埠银泰百货", counterId:"AH04-A18YZ", counterName:"JOY  MARK", content:"20枚游戏币", amount:5500, startDate:"20260701", endDate:"20260715", offPeakDef:"周一～周五", dailySaturation:"900", targetWriteOff:4400, actualWriteOff:1019 },
+  { region:"第三战区", store:"蚌埠银泰百货", counterId:"AH04-A12YH", counterName:"中影南方电影新干线", content:"单人观影兑换券", amount:22000, startDate:"20260701", endDate:"20260715", offPeakDef:"周一～周五", dailySaturation:"1200", targetWriteOff:5500, actualWriteOff:1810 },
+  { region:"第三战区", store:"合肥滨湖银泰百货", counterId:"AH05-A17NM", counterName:"PALY ONE", content:"20枚游戏币", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"240", targetWriteOff:1900, actualWriteOff:3189 },
+  { region:"第八战区", store:"海宁银泰百货", counterId:"132-A19LT", counterName:"泡泡渔场", content:"泡泡渔场50币", amount:2302.3, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"120", targetWriteOff:1610, actualWriteOff:760 },
+  { region:"第六战区", store:"温州瓯海银泰百货", counterId:"WZ05-A135Y", counterName:"卡莱宝", content:"碰碰车单人体验", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"105", targetWriteOff:100, actualWriteOff:0 },
+  { region:"第三战区", store:"合肥滨湖银泰百货", counterId:"AH05-A0ZBX", counterName:"乐尚", content:"轮滑体验课一节", amount:0, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"80", targetWriteOff:665, actualWriteOff:0 },
+  { region:"第八战区", store:"杭州下沙银泰百货", counterId:"HZ15-A0T2B", counterName:"雀掌柜", content:"雀掌柜麻将2小时体验", amount:4623, startDate:"20260701", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"240", targetWriteOff:3082, actualWriteOff:0 },
+  { region:"第一战区A", store:"杭州之江银泰百货", counterId:"HZ18-A0R27", counterName:"淘矿宝贝", content:"淘矿宝贝10个游戏币", amount:0, startDate:"20260702", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"105", targetWriteOff:672, actualWriteOff:150 },
+  { region:"第一战区A", store:"杭州之江银泰百货", counterId:"HZ18-A175S", counterName:"忆花轮", content:"忆花轮一次轮滑体验课", amount:0, startDate:"20260702", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"37", targetWriteOff:300, actualWriteOff:199 },
+  { region:"第一战区A", store:"杭州之江银泰百货", counterId:"HZ18-A17KM", counterName:"开乐迪", content:"开乐迪1小时欢唱兑换券", amount:0, startDate:"20260702", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"168", targetWriteOff:1104, actualWriteOff:233 },
+  { region:"第九战区", store:"银泰百货武汉创意城", counterId:"E07-A11N8", counterName:"瑞娜达健身", content:"健身次卡", amount:4910.4, startDate:"20260702", endDate:"20260726", offPeakDef:"周四～周日", dailySaturation:"810", targetWriteOff:5280, actualWriteOff:745 },
+  { region:"第八战区", store:"湖州东吴银泰百货", counterId:"HU02-A1502", counterName:"甜心小占", content:"甜心小占100枚弹珠", amount:4987.5, startDate:"20260703", endDate:"20260807", offPeakDef:"周一～周五", dailySaturation:"213", targetWriteOff:3750, actualWriteOff:399 },
+  { region:"第二战区", store:"宁波环球银泰百货", counterId:"NB08-A0ZD7", counterName:"分生", content:"VR体验", amount:0, startDate:"20260703", endDate:"20260717", offPeakDef:"周一～周日", dailySaturation:"240", targetWriteOff:1800, actualWriteOff:468 },
+  { region:"第八战区", store:"绍兴银泰百货", counterId:"SX02-A0QKK", counterName:"柴味", content:"一小时游玩", amount:0, startDate:"20260704", endDate:"20260712", offPeakDef:"周一～周日", dailySaturation:"60", targetWriteOff:300, actualWriteOff:58 },
+  { region:"第三战区", store:"芜湖银泰百货", counterId:"AH03-A1539", counterName:"弹了个猪", content:"20粒弹珠游玩", amount:0, startDate:"20260704", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"288", targetWriteOff:1120, actualWriteOff:200 },
+  { region:"第六战区", store:"乐清银泰百货", counterId:"WZ06-A18K3", counterName:"娃娃集合营", content:"15枚游戏币", amount:0, startDate:"20260706", endDate:"20260730", offPeakDef:"周一～周四", dailySaturation:"90", targetWriteOff:480, actualWriteOff:21 },
+  { region:"第六战区", store:"乐清银泰百货", counterId:"WZ06-A17YZ", counterName:"星动摩兔", content:"20枚弹珠", amount:0, startDate:"20260706", endDate:"20260730", offPeakDef:"周一～周四", dailySaturation:"90", targetWriteOff:400, actualWriteOff:25 },
+  { region:"第二战区", store:"慈溪城西银泰百货", counterId:"NBAL-A0V29", counterName:"琴潮", content:"欢唱卡（2h/次）", amount:1999.2, startDate:"20260706", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"252", targetWriteOff:2040, actualWriteOff:198 },
+  { region:"第二战区", store:"慈溪城西银泰百货", counterId:"NBAL-A0X1H", counterName:"幻镜迷宫", content:"儿童淘气堡、汽车小镇2选1", amount:2870.4, startDate:"20260706", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"120", targetWriteOff:2080, actualWriteOff:380 },
+  { region:"第七战区", store:"宝鸡银泰百货", counterId:"XA04-A17VX", counterName:"大西洋童乐城", content:"大西洋童乐城（单人淘气堡畅玩券）", amount:12000, startDate:"20260706", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"540", targetWriteOff:"", actualWriteOff:552 },
+  { region:"第一战区A", store:"杭州中大银泰百货", counterId:"162-A175B", counterName:"JOYMARK", content:"JOYMARK弹珠80枚", amount:3284.1, startDate:"20260714", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"216", targetWriteOff:3690, actualWriteOff:21 },
+  { region:"第九战区", store:"仙桃银泰百货", counterId:"E05-A0TNW", counterName:"牛兀258", content:"牛兀VR单次体验卡", amount:600, startDate:"20260708", endDate:"20260721", offPeakDef:"周一～周五", dailySaturation:"108", targetWriteOff:500, actualWriteOff:185 },
+  { region:"第二战区", store:"宁波东门银泰百货", counterId:"NB01-A0MGD", counterName:"moss7", content:"moss7限定桌游（卡游 桌牌等）", amount:2752, startDate:"20260710", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"1152", targetWriteOff:9220, actualWriteOff:21 },
+  { region:"第七战区", store:"西安曲江银泰百货", counterId:"XA05-A19E6", counterName:"兵马总动员", content:"骚秦的美术馆画展门票", amount:9300, startDate:"20260710", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"2400", targetWriteOff:15500, actualWriteOff:518 },
+  { region:"第七战区", store:"宝鸡开元商城", counterId:"XA06-A15BU", counterName:"时空龙骑士", content:"时空龙骑士游戏币25枚", amount:10000, startDate:"20260712", endDate:"20260731", offPeakDef:"周一～周日", dailySaturation:"800", targetWriteOff:7700, actualWriteOff:698 },
+  { region:"第六战区", store:"温州世贸银泰百货", counterId:"WZ01-A19VD", counterName:"叁贰壹电玩社", content:"1小时电玩/桌游", amount:0, startDate:"20260713", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"46", targetWriteOff:324, actualWriteOff:0 },
+  { region:"第六战区", store:"温州世贸银泰百货", counterId:"WZ01-A14B7", counterName:"网鱼网咖", content:"大厅上网", amount:0, startDate:"20260713", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"55", targetWriteOff:252, actualWriteOff:3 },
+  { region:"第六战区", store:"乐清银泰百货", counterId:"WZ06-A14KQ", counterName:"佳叽", content:"20枚游戏币", amount:0, startDate:"20260713", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"90", targetWriteOff:480, actualWriteOff:9 },
+  { region:"第八战区", store:"杭州萧山银泰百货", counterId:"HZ19-A0LV4", counterName:"玩偶遇到爱", content:"玩偶遇到爱5个游戏币兑换券", amount:0, startDate:"20260713", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"312", targetWriteOff:2250, actualWriteOff:39 },
+  { region:"第八战区", store:"杭州萧山银泰百货", counterId:"HZ19-A13JA", counterName:"超越铜锣湾", content:"超越铜锣湾小包厢1小时闲时欢唱券", amount:2992.5, startDate:"20260713", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"240", targetWriteOff:2250, actualWriteOff:0 },
+  { region:"第六战区", store:"温州世贸银泰百货", counterId:"WZ01-A1900", counterName:"袋口动物园", content:"半小时撸猫券", amount:0, startDate:"20260713", endDate:"20260831", offPeakDef:"周一～周四", dailySaturation:"40", targetWriteOff:232, actualWriteOff:0 },
+  { region:"第六战区", store:"温州世贸银泰百货", counterId:"WZ01-A0UTB", counterName:"星聚会", content:"唱歌", amount:0, startDate:"20260713", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"53", targetWriteOff:108, actualWriteOff:0 },
+  { region:"第八战区", store:"杭州萧山银泰百货", counterId:"HZ19-A0VDM", counterName:"梦星汇", content:"梦星汇新生舞蹈体验课", amount:0, startDate:"20260713", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"16", targetWriteOff:120, actualWriteOff:0 },
+  { region:"第八战区", store:"杭州萧山银泰百货", counterId:"HZ19-A16JE", counterName:"弹弹星球", content:"30枚弹珠币", amount:0, startDate:"20260715", endDate:"20260831", offPeakDef:"周一～周日", dailySaturation:"320", targetWriteOff:7050, actualWriteOff:8 },
+  { region:"第七战区", store:"宝鸡银泰百货", counterId:"XA04-A14F7", counterName:"大夹子", content:"大夹子（单人30 枚游戏币）", amount:1998, startDate:"20260715", endDate:"20260731", offPeakDef:"周一～周四", dailySaturation:"360", targetWriteOff:1800, actualWriteOff:18 },
+  { region:"第六战区", store:"温州世贸银泰百货", counterId:"WZ01-A19NM", counterName:"礼品巴巴", content:"19.9元880枚弹珠", amount:0, startDate:"20260715", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"60", targetWriteOff:252, actualWriteOff:0 },
+  { region:"第八战区", store:"海宁银泰百货", counterId:"132-A16PK", counterName:"跑跑太空熊", content:"30枚弹珠", amount:0, startDate:"20260715", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"80", targetWriteOff:384, actualWriteOff:19 },
+  { region:"第九战区", store:"仙桃银泰百货", counterId:"E05-A0KK7", counterName:"银兴", content:"观影兑换券一张", amount:16900, startDate:"20260716", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"1350", targetWriteOff:6500, actualWriteOff:0 },
+  { region:"第八战区", store:"湖州东吴银泰百货", counterId:"HU02-A16GQ", counterName:"酷尼熊", content:"0.1元乘坐1次小火车", amount:3080, startDate:"20260717", endDate:"20260817", offPeakDef:"周一～周五", dailySaturation:"150", targetWriteOff:2200, actualWriteOff:0 },
+  { region:"第六战区", store:"金华之心银泰百货", counterId:"JHAD-A0RUR", counterName:"APFUNLL", content:"APFUNLL畅玩券", amount:0, startDate:"20260718", endDate:"20260731", offPeakDef:"周一～周五", dailySaturation:"300", targetWriteOff:660, actualWriteOff:0 },
+  { region:"第八战区", store:"杭州萧山银泰百货", counterId:"HZ19-A1A69", counterName:"净颜社", content:"【净透肌】体验券", amount:0, startDate:"20260720", endDate:"20260831", offPeakDef:"周一～周五", dailySaturation:"总量124份", targetWriteOff:124, actualWriteOff:0 },
+];
+
+// ==================== LOCAL STORAGE ====================
+const SAVE_KEY_WRITEOFF = 'counter_actual_writeoff';
+const SAVE_KEY_SATURATION = 'counter_daily_saturation';
+let savedWriteOffs = {};
+let savedSaturations = {};
+try {
+  savedWriteOffs = JSON.parse(localStorage.getItem(SAVE_KEY_WRITEOFF)) || {};
+  savedSaturations = JSON.parse(localStorage.getItem(SAVE_KEY_SATURATION)) || {};
+} catch(e) { savedWriteOffs = {}; savedSaturations = {}; }
+rawData.forEach(row => {
+  if (savedWriteOffs[row.counterId] !== undefined) row.actualWriteOff = savedWriteOffs[row.counterId];
+  if (savedSaturations[row.counterId] !== undefined) row.dailySaturation = savedSaturations[row.counterId];
+});
+
+// ==================== PERIOD GENERATION ====================
+function generatePeriods() {
+  let minDate = '99999999', maxDate = '99999999';
+  rawData.forEach(r => {
+    if (r.startDate < minDate) minDate = r.startDate;
+    if (r.endDate > maxDate) maxDate = r.endDate;
+  });
+  const today = new Date();
+  const todayStr = formatDate8(today);
+  // Go up to December 2026 or today, whichever is later
+  const endStr = todayStr > maxDate ? todayStr : maxDate;
+
+  const startY = parseInt(minDate.substring(0,4));
+  const startM = parseInt(minDate.substring(4,6));
+  const endY = parseInt(endStr.substring(0,4));
+  const endM = parseInt(endStr.substring(4,6));
+
+  const periods = [];
+  for (let y = startY; y <= endY; y++) {
+    const mStart = (y === startY) ? startM : 1;
+    const mEnd = (y === endY) ? endM : 12;
+    for (let m = mStart; m <= mEnd; m++) {
+      const mm = String(m).padStart(2,'0');
+      // 1st of month
+      periods.push({ label: `${m}.1期`, date: `${y}${mm}01` });
+      // 15th of month
+      periods.push({ label: `${m}.15期`, date: `${y}${mm}15` });
+    }
+  }
+  return periods;
+}
+
+function populatePeriodSelect() {
+  const sel = document.getElementById('periodSelect');
+  const periods = generatePeriods();
+  sel.innerHTML = '';
+  periods.forEach((p, i) => {
+    const opt = document.createElement('option');
+    opt.value = p.date;
+    opt.textContent = p.label + ' (' + p.date.substring(0,4) + '-' + p.date.substring(4,6) + '-' + p.date.substring(6,8) + ')';
+    if (p.date === currentCmdDate) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  // If currentCmdDate not found, add it
+  if (!periods.find(p => p.date === currentCmdDate)) {
+    const opt = document.createElement('option');
+    opt.value = currentCmdDate;
+    opt.textContent = currentCmdDate.substring(4,6) + '.' + currentCmdDate.substring(6,8) + '期';
+    opt.selected = true;
+    sel.appendChild(opt);
+  }
+}
+
+function onPeriodChange() {
+  currentCmdDate = document.getElementById('periodSelect').value;
+  renderAll();
+}
+
+// ==================== EDIT MODE ====================
+const EDIT_PASSWORD = '1206';
+
+function toggleEditMode() {
+  if (editMode) {
+    // Exiting edit mode — no password needed
+    editMode = false;
+    updateModeUI();
+    renderAll();
+    return;
+  }
+  // Entering edit mode — require password
+  const pw = prompt('请输入编辑密码：');
+  if (pw === EDIT_PASSWORD) {
+    editMode = true;
+    updateModeUI();
+    renderAll();
+  } else if (pw !== null) {
+    alert('密码错误，无法进入编辑模式');
+  }
+}
+
+function updateModeUI() {
+  const toggle = document.getElementById('modeToggle');
+  const label = document.getElementById('modeLabel');
+  if (editMode) {
+    toggle.classList.add('edit-active');
+    label.textContent = '编辑模式';
+  } else {
+    toggle.classList.remove('edit-active');
+    label.textContent = '查看模式';
+  }
+}
+
+// Check URL param for edit mode (password still required via prompt)
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('edit') === '1') {
+    const pw = prompt('请输入编辑密码：');
+    if (pw === EDIT_PASSWORD) {
+      editMode = true;
+      updateModeUI();
+    } else if (pw !== null) {
+      alert('密码错误，将以查看模式打开');
+    }
+  }
+})();
+
+// ==================== CALCULATION ENGINE ====================
+function calculateAll(commandDateStr) {
+  const cmdDate = parseDate(commandDateStr);
+  if (!cmdDate) return [];
+
+  return rawData.map(row => {
+    const startDate = parseDate(row.startDate);
+    const endDate = parseDate(row.endDate);
+    const offPeakDays = parseOffPeakDays(row.offPeakDef);
+
+    const effectiveEnd = cmdDate < endDate ? cmdDate : endDate;
+
+    // K: 全周期开展天数
+    const K = countOffPeakDays(row.startDate, row.endDate, offPeakDays);
+
+    // L: 已开展有效天数
+    let L = 0;
+    if (cmdDate >= startDate) {
+      const cutoffStr = formatDate8(effectiveEnd);
+      L = countOffPeakDays(row.startDate, cutoffStr, offPeakDays);
+    }
+
+    // M: 日买断金额
+    const M = K > 0 ? row.amount / K : 0;
+
+    // N: 已付出买断成本
+    const N = M * L;
+
+    // P: 时间进度
+    const P = K > 0 ? L / K : 0;
+
+    // Q: 饱和承接人数 (总量模式: 总量×P; 日常模式: J×L)
+    const satInfo = parseSaturation(row.dailySaturation);
+    const Q = satInfo.mode === 'total' ? satInfo.value * P : satInfo.value * L;
+
+    // R: 实际核销
+    const R = row.actualWriteOff;
+
+    // S: 饱和率
+    const S = Q > 0 ? R / Q : null;
+
+    // T: 人均成本
+    const T = R > 0 ? N / R : null;
+
+    return { ...row, K, L, M, N, P, Q, R, S, T, satInfo, offPeakDays, startDateObj: startDate, endDateObj: endDate };
+  });
+}
+
+// ==================== AGGREGATION ====================
+function aggregateStore(rows) {
+  const storeMap = {};
+  rows.forEach(r => {
+    const key = r.region + '|||' + r.store;
+    if (!storeMap[key]) storeMap[key] = { region: r.region, store: r.store, counterIds: new Set(), sumQ: 0, sumR: 0, sumN: 0, sumAmount: 0, sumTarget: 0 };
+    const s = storeMap[key];
+    s.counterIds.add(r.counterId);
+    s.sumQ += r.Q; s.sumR += r.R; s.sumN += r.N; s.sumAmount += r.amount;
+    s.sumTarget += (typeof r.targetWriteOff === 'number' ? r.targetWriteOff : 0);
+  });
+  return Object.values(storeMap).map(s => ({
+    region: s.region, store: s.store, counterCount: s.counterIds.size,
+    sumQ: s.sumQ, sumR: s.sumR, sumN: s.sumN, sumAmount: s.sumAmount, sumTarget: s.sumTarget,
+    saturation: s.sumQ > 0 ? s.sumR / s.sumQ : null,
+    avgCost: s.sumR > 0 ? s.sumN / s.sumR : null,
+  }));
+}
+
+function aggregateRegion(storeRows) {
+  const regionMap = {};
+  storeRows.forEach(s => {
+    const key = s.region;
+    if (!regionMap[key]) regionMap[key] = { region: s.region, storeSet: new Set(), counterCount: 0, sumQ: 0, sumR: 0, sumN: 0, sumAmount: 0, sumTarget: 0 };
+    const r = regionMap[key];
+    r.storeSet.add(s.store); r.counterCount += s.counterCount;
+    r.sumQ += s.sumQ; r.sumR += s.sumR; r.sumN += s.sumN; r.sumAmount += s.sumAmount; r.sumTarget += s.sumTarget;
+  });
+  return Object.values(regionMap).map(r => ({
+    region: r.region, storeCount: r.storeSet.size, counterCount: r.counterCount,
+    sumQ: r.sumQ, sumR: r.sumR, sumN: r.sumN, sumAmount: r.sumAmount, sumTarget: r.sumTarget,
+    saturation: r.sumQ > 0 ? r.sumR / r.sumQ : null,
+    avgCost: r.sumR > 0 ? r.sumN / r.sumR : null,
+  }));
+}
+
+// ==================== FORMATTING ====================
+function fmtNum(n, decimals) {
+  if (n == null || isNaN(n)) return '-';
+  return n.toLocaleString('zh-CN', { minimumFractionDigits: decimals||0, maximumFractionDigits: decimals||0 });
+}
+
+function fmtMoney(n) {
+  if (n == null || isNaN(n)) return '-';
+  return '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+}
+
+function fmtMoneyDec(n) {
+  if (n == null || isNaN(n)) return '-';
+  return '¥' + n.toLocaleString('zh-CN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtPct(n) {
+  if (n == null) return '-';
+  return (n * 100).toFixed(1) + '%';
+}
+
+function fmtPctHtml(n) {
+  if (n == null) return '-';
+  const pct = n * 100;
+  let cls = pct >= 80 ? 'rate-high' : pct >= 50 ? 'rate-mid' : 'rate-low';
+  return `<span class="${cls}">${pct.toFixed(1)}%</span>`;
+}
+
+function fmtCostHtml(n) {
+  if (n == null) return '-';
+  let cls = n <= 80 ? 'cost-good' : 'cost-warn';
+  return `<span class="${cls}">¥${n.toFixed(2)}</span>`;
+}
+
+function fmtDate8(str) {
+  if (!str || str.length !== 8) return str;
+  return str.substring(0,4) + '-' + str.substring(4,6) + '-' + str.substring(6,8);
+}
+
+function getCutoffLabel() {
+  const d = parseDate(currentCmdDate);
+  if (!d) return '';
+  return '（截至' + (d.getMonth()+1) + '.' + d.getDate() + '）';
+}
+
+// ==================== RENDER ====================
+let currentCalcData = [];
+let currentStoreAgg = [];
+let currentRegionAgg = [];
+
+function getFilteredData() {
+  const regionFilter = document.getElementById('filterRegion').value;
+  const storeFilter = document.getElementById('filterStore').value;
+  return currentCalcData.filter(r => {
+    if (regionFilter && r.region !== regionFilter) return false;
+    if (storeFilter && r.store !== storeFilter) return false;
+    return true;
+  });
+}
+
+function renderAll() {
+  currentCalcData = calculateAll(currentCmdDate);
+  currentStoreAgg = aggregateStore(currentCalcData);
+  currentRegionAgg = aggregateRegion(currentStoreAgg);
+  populateFilters();
+  renderSummaryCards();
+  renderRegionTable();
+  renderStoreTable();
+  renderDetailTable();
+}
+
+function onFilterRegionChange() {
+  document.getElementById('filterStore').value = '';
+  renderAll();
+}
+
+function populateFilters() {
+  const regionSel = document.getElementById('filterRegion');
+  const storeSel = document.getElementById('filterStore');
+  const curRegion = regionSel.value;
+  const curStore = storeSel.value;
+
+  const regions = [...new Set(currentCalcData.map(r => r.region))].sort();
+  regionSel.innerHTML = '<option value="">全部战区</option>';
+  regions.forEach(r => { regionSel.innerHTML += `<option value="${r}" ${curRegion===r?'selected':''}>${r}</option>`; });
+
+  const stores = [...new Set(currentCalcData.map(r => r.region+'|||'+r.store))].sort();
+  storeSel.innerHTML = '<option value="">全部门店</option>';
+  stores.forEach(s => {
+    const [reg, sto] = s.split('|||');
+    if (curRegion && reg !== curRegion) return;
+    storeSel.innerHTML += `<option value="${sto}" ${curStore===sto?'selected':''}>${sto} (${reg})</option>`;
+  });
+}
+
+function renderSummaryCards() {
+  const filtered = getFilteredData();
+  const storeAgg = aggregateStore(filtered);
+  const totalCounters = storeAgg.reduce((a,s) => a + s.counterCount, 0);
+  const totalQ = storeAgg.reduce((a,s) => a + s.sumQ, 0);
+  const totalR = storeAgg.reduce((a,s) => a + s.sumR, 0);
+  const totalN = storeAgg.reduce((a,s) => a + s.sumN, 0);
+  const totalSat = totalQ > 0 ? totalR / totalQ : null;
+  const totalCost = totalR > 0 ? totalN / totalR : null;
+
+  const cards = [
+    { label:'📋 开展专柜数', value: totalCounters, sub: `${[...new Set(filtered.map(r=>r.region))].length} 战区 / ${storeAgg.length} 门店` },
+    { label:'👥 饱和承接人数', value: fmtNum(totalQ,0), sub: '单天饱和×已开展天数', cls:'accent-green' },
+    { label:'✅ 实际核销人数', value: fmtNum(totalR,0), sub: '活动开始至截止期核销数据', cls:'accent-purple' },
+    { label:'📈 整体饱和率', value: fmtPctHtml(totalSat), sub: '实际核销÷饱和承接', cls: totalSat!=null&&totalSat>=.8?'accent-green':totalSat!=null&&totalSat>=.5?'accent-orange':'accent-red' },
+    { label:'💰 已付出买断成本', value: fmtMoney(totalN), sub: '日买断金额×已开展天数', cls:'accent-orange' },
+    { label:'🧑 人均成本', value: fmtCostHtml(totalCost), sub: '成本÷核销人数', cls:'' },
+  ];
+  document.getElementById('summaryCards').innerHTML = cards.map(c =>
+    `<div class="summary-card ${c.cls||''}"><div class="card-label">${c.label}</div><div class="card-value">${c.value}</div><div class="card-sub">${c.sub}</div></div>`
+  ).join('');
+}
+
+function renderRegionTable() {
+  const filtered = getFilteredData();
+  const storeAgg = aggregateStore(filtered);
+  const regionAgg = aggregateRegion(storeAgg);
+  let html = `<thead><tr>
+    <th class="col-group-a">战区</th><th class="col-group-a">门店数</th><th class="col-group-a">专柜数</th>
+    <th class="col-group-b">立项金额合计</th><th class="col-group-c">全周期目标核销合计</th>
+    <th class="col-group-c">饱和承接人数</th><th class="col-group-c">实际核销人数</th>
+    <th class="col-group-c">饱和率</th><th class="col-group-b">已付出买断成本</th><th class="col-group-b">人均成本</th>
+  </tr></thead><tbody>`;
+  if (regionAgg.length === 0) {
+    html += '<tr><td colspan="10" style="color:#999;padding:24px;">暂无数据</td></tr>';
+  } else {
+    regionAgg.forEach(r => {
+      html += `<tr>
+        <td class="text-left"><strong>${r.region}</strong></td><td>${r.storeCount}</td><td>${r.counterCount}</td>
+        <td class="text-right num">${fmtMoney(r.sumAmount)}</td><td class="text-right num">${fmtNum(r.sumTarget,0)}</td>
+        <td class="text-right num">${fmtNum(r.sumQ,0)}</td><td class="text-right num">${fmtNum(r.sumR,0)}</td>
+        <td>${fmtPctHtml(r.saturation)}</td><td class="text-right num">${fmtMoney(r.sumN)}</td><td>${fmtCostHtml(r.avgCost)}</td>
+      </tr>`;
+    });
+  }
+  html += '</tbody>';
+  document.getElementById('regionTable').innerHTML = html;
+}
+
+function renderStoreTable() {
+  const filtered = getFilteredData();
+  const storeAgg = aggregateStore(filtered);
+  let html = `<thead><tr>
+    <th class="col-group-a">战区</th><th class="col-group-a">门店</th><th class="col-group-a">专柜数</th>
+    <th class="col-group-b">立项金额合计</th><th class="col-group-c">全周期目标核销合计</th>
+    <th class="col-group-c">饱和承接人数</th><th class="col-group-c">实际核销人数</th>
+    <th class="col-group-c">饱和率</th><th class="col-group-b">已付出买断成本</th><th class="col-group-b">人均成本</th>
+  </tr></thead><tbody>`;
+  if (storeAgg.length === 0) {
+    html += '<tr><td colspan="10" style="color:#999;padding:24px;">暂无数据</td></tr>';
+  } else {
+    storeAgg.sort((a,b) => a.region.localeCompare(b.region) || a.store.localeCompare(b.store));
+    storeAgg.forEach(s => {
+      html += `<tr>
+        <td class="text-left">${s.region}</td><td class="text-left"><strong>${s.store}</strong></td><td>${s.counterCount}</td>
+        <td class="text-right num">${fmtMoney(s.sumAmount)}</td><td class="text-right num">${fmtNum(s.sumTarget,0)}</td>
+        <td class="text-right num">${fmtNum(s.sumQ,0)}</td><td class="text-right num">${fmtNum(s.sumR,0)}</td>
+        <td>${fmtPctHtml(s.saturation)}</td><td class="text-right num">${fmtMoney(s.sumN)}</td><td>${fmtCostHtml(s.avgCost)}</td>
+      </tr>`;
+    });
+  }
+  html += '</tbody>';
+  document.getElementById('storeTable').innerHTML = html;
+}
+
+function renderDetailTable() {
+  const filtered = getFilteredData();
+  const cutoffLabel = getCutoffLabel();
+  const cutoffNote = cutoffLabel ? ' <span class="cutoff-note">'+cutoffLabel+'</span>' : '';
+
+  let html = `<thead><tr>
+    <th class="col-group-a">战区</th><th class="col-group-a">门店</th><th class="col-group-a">专柜号</th>
+    <th class="col-group-a">专柜名称</th><th class="col-group-a">采购内容</th>
+    <th class="col-group-b">立项金额</th><th class="col-group-c">开始日期</th><th class="col-group-c">截止日期</th>
+    <th class="col-group-c">闲时定义</th><th class="col-group-c">单天饱和</th>
+    <th class="col-group-c">全周期<br>开展天数</th><th class="col-group-c">已开展<br>有效天数${cutoffNote}</th>
+    <th class="col-group-b">日买断金额</th><th class="col-group-b">已付出<br>买断成本</th>
+    <th class="col-group-d">全周期<br>目标核销</th><th class="col-group-c">时间进度</th>
+    <th class="col-group-c">饱和承接<br>人数</th><th class="col-group-d">实际核销${cutoffLabel?'<br><span class=cutoff-note>'+cutoffLabel+'</span>':''}</th>
+    <th class="col-group-d">饱和率</th><th class="col-group-b">人均成本</th>
+  </tr></thead><tbody>`;
+
+  if (filtered.length === 0) {
+    html += '<tr><td colspan="20" style="color:#999;padding:24px;">暂无数据，请调整筛选条件</td></tr>';
+  } else {
+    filtered.sort((a,b) => a.region.localeCompare(b.region) || a.store.localeCompare(b.store) || a.counterId.localeCompare(b.counterId));
+    filtered.forEach(r => {
+      const satDisplay = r.satInfo.mode === 'total'
+        ? `<span class="sat-total" title="总量模式：Q=总量×时间进度">${r.dailySaturation}</span>`
+        : `<span class="readonly-value">${fmtNum(r.satInfo.value,0)}</span>`;
+
+      const jCell = editMode
+        ? `<input class="cell-input" type="text" value="${r.dailySaturation}" data-counter="${r.counterId}" onchange="onDailySaturationChange(this)" style="width:85px;" title="纯数字=单天饱和；总量N=固定总份数×时间进度">`
+        : satDisplay;
+
+      const rCell = editMode
+        ? `<input class="cell-input" type="number" value="${r.R}" data-counter="${r.counterId}" onchange="onActualWriteOffChange(this)" style="width:80px;">`
+        : `<span class="readonly-value">${fmtNum(r.R,0)}</span>`;
+
+      const qTitle = r.satInfo.mode === 'total'
+        ? `总量${r.satInfo.value} × ${(r.P*100).toFixed(1)}% = ${r.Q.toFixed(1)}`
+        : `${r.satInfo.value} × ${r.L} = ${r.Q.toFixed(0)}`;
+
+      html += `<tr>
+        <td class="text-left">${r.region}</td><td class="text-left">${r.store}</td><td>${r.counterId}</td>
+        <td class="text-left">${r.counterName}</td><td class="text-left">${r.content}</td>
+        <td class="text-right num">${fmtMoney(r.amount)}</td><td>${fmtDate8(r.startDate)}</td><td>${fmtDate8(r.endDate)}</td>
+        <td>${r.offPeakDef}</td><td class="text-right">${jCell}</td>
+        <td class="text-right num">${fmtNum(r.K,0)}</td><td class="text-right num">${fmtNum(r.L,0)}</td>
+        <td class="text-right num">${fmtMoneyDec(r.M)}</td><td class="text-right num">${fmtMoneyDec(r.N)}</td>
+        <td class="text-right num">${typeof r.targetWriteOff==='number'?fmtNum(r.targetWriteOff,0):r.targetWriteOff}</td>
+        <td>${fmtPctHtml(r.P)}</td><td class="text-right num" title="${qTitle}">${fmtNum(r.Q,0)}</td>
+        <td class="text-right">${rCell}</td><td>${fmtPctHtml(r.S)}</td><td>${fmtCostHtml(r.T)}</td>
+      </tr>`;
+    });
+  }
+  html += '</tbody>';
+  document.getElementById('detailTable').innerHTML = html;
+}
+
+// ==================== EVENT HANDLERS ====================
+function onActualWriteOffChange(input) {
+  const counterId = input.dataset.counter;
+  const newVal = parseInt(input.value) || 0;
+  const row = rawData.find(r => r.counterId === counterId);
+  if (row) row.actualWriteOff = newVal;
+  savedWriteOffs[counterId] = newVal;
+  try { localStorage.setItem(SAVE_KEY_WRITEOFF, JSON.stringify(savedWriteOffs)); } catch(e) {}
+  renderAll();
+}
+
+function onDailySaturationChange(input) {
+  const counterId = input.dataset.counter;
+  const rawVal = input.value.trim();
+  const row = rawData.find(r => r.counterId === counterId);
+  const numVal = parseInt(rawVal);
+  if (row) row.dailySaturation = (!isNaN(numVal) && String(numVal) === rawVal) ? numVal : rawVal;
+  savedSaturations[counterId] = row ? row.dailySaturation : rawVal;
+  try { localStorage.setItem(SAVE_KEY_SATURATION, JSON.stringify(savedSaturations)); } catch(e) {}
+  renderAll();
+}
+
+function resetFilters() {
+  document.getElementById('filterRegion').value = '';
+  document.getElementById('filterStore').value = '';
+  renderAll();
+}
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  document.querySelector(`.tab-btn[onclick="switchTab('${tab}')"]`).classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ==================== EXPORT ====================
+function exportCSV() {
+  const filtered = getFilteredData();
+  const cutoffLabel = getCutoffLabel().replace(/[（）]/g,'');
+  const headers = [
+    '战区','门店','专柜号','专柜名称','采购内容',
+    '立项金额','开始日期','截止日期','闲时定义','单天饱和',
+    '全周期开展天数','已开展有效天数'+cutoffLabel,'日买断金额','已付出买断成本',
+    '全周期目标核销','时间进度','饱和承接人数','实际核销','饱和率','人均成本'
+  ];
+  const rows = filtered.map(r => [
+    r.region, r.store, r.counterId, r.counterName, r.content,
+    r.amount, fmtDate8(r.startDate), fmtDate8(r.endDate), r.offPeakDef, r.dailySaturation,
+    r.K, r.L, r.M.toFixed(2), r.N.toFixed(2),
+    r.targetWriteOff, (r.P*100).toFixed(1)+'%', r.Q.toFixed(r.satInfo.mode==='total'?1:0), r.R,
+    r.S != null ? (r.S*100).toFixed(1)+'%' : '', r.T != null ? r.T.toFixed(2) : ''
+  ]);
+  let csv = '﻿' + headers.join(',') + '\n';
+  rows.forEach(row => { csv += row.map(c => '"' + String(c).replace(/"/g,'""') + '"').join(',') + '\n'; });
+  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = '直采专柜活动一览表_'+currentCmdDate+'.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ==================== INIT ====================
+populatePeriodSelect();
+updateModeUI();
+renderAll();
+</script>
+
+</body>
+</html>
