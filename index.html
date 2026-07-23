@@ -142,7 +142,8 @@ td .readonly-value{display:inline-block;min-width:50px;font-weight:500}
     <select id="filterRegion" onchange="onFilterRegionChange()"><option value="">全部战区</option></select>
     <label>📍 门店：</label>
     <select id="filterStore" onchange="renderAll()"><option value="">全部门店</option></select>
-    <button class="btn btn-outline" onclick="resetFilters()">🔄 重置</button>
+    <button class="btn btn-outline" onclick="resetFilters()">🔄 重置筛选</button>
+    <button class="btn btn-outline" onclick="resetAllData()">🗑 清除编辑缓存</button>
     <span style="flex:1"></span>
     <span class="legend"><span class="ly"></span> 用户提供数据</span>
     <span class="legend"><span class="lr"></span> 自动计算数据</span>
@@ -857,6 +858,7 @@ function populatePeriodSelect(){
   });
 }
 function resetFilters(){document.getElementById('filterRegion').value='';document.getElementById('filterStore').value='';renderAll();}
+function resetAllData(){if(confirm('确认清除所有本地编辑缓存？这将恢复为xlsx原始数据。')){localStorage.clear();location.reload();}}
 function switchTab(tab){
   document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
   document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
