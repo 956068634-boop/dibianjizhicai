@@ -785,7 +785,13 @@ function renderAll(){
   recalculateAll();
   currentStoreAgg=aggregateStore(currentCalcData);
   currentRegionAgg=aggregateRegion(currentStoreAgg);
+  // Save filter values before populate rebuilds dropdowns
+  var rf=document.getElementById('filterRegion').value;
+  var sf=document.getElementById('filterStore').value;
   populateFilters();
+  // Restore filter values after rebuild
+  document.getElementById('filterRegion').value=rf;
+  document.getElementById('filterStore').value=sf;
   renderSummaryCards();
   renderGroupTable();
   renderRegionTable();
